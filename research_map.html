@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>体育新闻研究地图 · 方法×理论×主题</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",sans-serif; background:#f4f6fb; color:#1a2b4a; line-height:1.5; }
+  .header { background:linear-gradient(135deg,#1e3a8a,#3b82f6); color:#fff; padding:36px 40px; }
+  .header h1 { font-size:28px; margin-bottom:8px; }
+  .header p { opacity:.85; font-size:14px; }
+  .stats { display:flex; gap:16px; margin-top:20px; flex-wrap:wrap; }
+  .stat-card { background:rgba(255,255,255,.12); backdrop-filter:blur(4px); border-radius:12px; padding:14px 24px; min-width:130px; }
+  .stat-card .num { font-size:30px; font-weight:bold; }
+  .stat-card .lbl { font-size:12px; opacity:.8; margin-top:2px; }
+  .container { max-width:1280px; margin:0 auto; padding:24px 20px 60px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .grid.full { grid-template-columns:1fr; }
+  .card { background:#fff; border-radius:14px; padding:20px; box-shadow:0 2px 12px rgba(30,58,138,.08); }
+  .card h2 { font-size:16px; color:#1e3a8a; margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+  .card .desc { font-size:12px; color:#6b7280; margin-bottom:16px; }
+
+  /* 条形图 */
+  .bar-row { display:flex; align-items:center; margin-bottom:7px; font-size:12px; }
+  .bar-label { width:90px; text-align:right; padding-right:10px; color:#374151; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bar-label.topic-label { width:120px; }
+  .bar-wrap { flex:1; display:flex; align-items:center; gap:8px; min-width:0; }
+  .bar { height:16px; border-radius:3px; background:linear-gradient(90deg,#1e3a8a,#3b82f6); min-width:2px; transition:width .8s ease; }
+  .bar.topic { background:linear-gradient(90deg,#1e3a8a,#60a5fa); }
+  .bar-num { font-size:11px; color:#4b5563; min-width:28px; }
+
+  /* 环形图 */
+  .donut-wrap { display:flex; align-items:center; justify-content:center; gap:30px; flex-wrap:wrap; min-height:280px; }
+  .donut { width:220px; height:220px; border-radius:50%; background:conic-gradient(#3b82f6 0.00% 16.67%,#ec4899 16.67% 31.81%,#f59e0b 31.81% 43.13%,#10b981 43.13% 53.82%,#8b5cf6 53.82% 63.99%,#06b6d4 63.99% 71.50%,#ef4444 71.50% 78.88%,#84cc16 78.88% 84.61%,#6366f1 84.61% 89.69%,#a855f7 89.69% 94.27%,#f43f5e 94.27% 97.20%,#14b8a6 97.20% 100.00%); position:relative; }
+  .donut::after { content:''; position:absolute; inset:36px; background:#fff; border-radius:50%; }
+  .donut-inner { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:1; }
+  .donut-inner .big { font-size:26px; font-weight:bold; color:#1e3a8a; }
+  .donut-inner .small { font-size:12px; color:#6b7280; }
+  .legend { display:grid; grid-template-columns:1fr; gap:6px; font-size:12px; max-width:260px; }
+  .legend-item { display:flex; align-items:center; gap:8px; color:#4b5563; }
+  .legend-item strong { color:#1e3a8a; margin:0 4px; }
+  .dot { width:12px; height:12px; border-radius:2px; flex-shrink:0; }
+
+  /* 热力图 */
+  .heat-table { width:100%; border-collapse:collapse; font-size:11px; }
+  .heat-table th, .heat-table td { padding:6px 4px; text-align:center; border:1px solid #e5e7eb; }
+  .heat-table th { background:#f8fafc; color:#374151; font-weight:600; }
+  .heat-table td { min-width:38px; }
+  .row-label { text-align:left !important; padding-left:8px; background:#f8fafc; font-weight:600; color:#374151; white-space:nowrap; }
+
+  .footer { text-align:center; color:#9ca3af; font-size:12px; margin-top:30px; padding:20px; }
+  @media(max-width:900px) { .grid { grid-template-columns:1fr; } .bar-label { width:80px; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>🏟️ 体育新闻研究地图</h1>
+  <p>研究方法 × 理论框架 × 研究主题 · 三维交叉分析 · 知识库可视化 (2026-08-14 07:06)</p>
+  <div class="stats">
+    <div class="stat-card"><div class="num">1394</div><div class="lbl">文献总数</div></div>
+    <div class="stat-card"><div class="num">171</div><div class="lbl">研究方法类型</div></div>
+    <div class="stat-card"><div class="num">263</div><div class="lbl">理论框架</div></div>
+    <div class="stat-card"><div class="num">76</div><div class="lbl">研究主题</div></div>
+    <div class="stat-card"><div class="num">14</div><div class="lbl">学科分类</div></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="grid">
+    <div class="card">
+      <h2>📊 研究方法分布</h2>
+      <div class="desc">全部文献所采用的研究方法类型统计（按主方法归类，从低到高）</div>
+      
+        <div class="bar-row">
+          <div class="bar-label">社会网络分析</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:2.0%;"></div>
+            <span class="bar-num">10</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">系统文献综述</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:2.3%;"></div>
+            <span class="bar-num">12</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">框架分析</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:2.3%;"></div>
+            <span class="bar-num">12</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">历史研究</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:2.5%;"></div>
+            <span class="bar-num">13</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">比较研究</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:3.1%;"></div>
+            <span class="bar-num">16</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">实验研究</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:3.9%;"></div>
+            <span class="bar-num">20</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">话语分析</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:5.1%;"></div>
+            <span class="bar-num">26</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">实证研究</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:6.1%;"></div>
+            <span class="bar-num">31</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">案例研究</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:8.4%;"></div>
+            <span class="bar-num">43</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">质性研究</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:9.2%;"></div>
+            <span class="bar-num">47</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">量化研究</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:9.2%;"></div>
+            <span class="bar-num">47</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">调查研究</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:9.8%;"></div>
+            <span class="bar-num">50</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">内容分析</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:15.8%;"></div>
+            <span class="bar-num">81</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">访谈研究</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:16.8%;"></div>
+            <span class="bar-num">86</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label">理论分析</div>
+          <div class="bar-wrap">
+            <div class="bar" style="width:100.0%;"></div>
+            <span class="bar-num">512</span>
+          </div>
+        </div>
+    </div>
+    <div class="card">
+      <h2>🧠 理论框架分布</h2>
+      <div class="desc">文献所依托的主要理论框架分布</div>
+      <div class="donut-wrap">
+        <div class="donut">
+          <div class="donut-inner"><div class="big">12</div><div class="small">主要理论</div></div>
+        </div>
+        <div class="legend">
+          
+        <div class="legend-item"><span class="dot" style="background:#3b82f6"></span><span>新闻生产社会学 <strong>131</strong> (16.7%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#ec4899"></span><span>性别理论 <strong>119</strong> (15.1%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#f59e0b"></span><span>国际传播理论 <strong>89</strong> (11.3%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#10b981"></span><span>新闻传播理论 <strong>84</strong> (10.7%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#8b5cf6"></span><span>新媒体传播理论 <strong>80</strong> (10.2%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#06b6d4"></span><span>受众研究理论 <strong>59</strong> (7.5%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#ef4444"></span><span>框架理论 <strong>58</strong> (7.4%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#84cc16"></span><span>政治经济学 <strong>45</strong> (5.7%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#6366f1"></span><span>平台理论 <strong>40</strong> (5.1%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#a855f7"></span><span>叙事理论 <strong>36</strong> (4.6%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#f43f5e"></span><span>话语分析理论 <strong>23</strong> (2.9%)</span></div>
+        
+        <div class="legend-item"><span class="dot" style="background:#14b8a6"></span><span>媒介化理论 <strong>22</strong> (2.8%)</span></div>
+        
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid full" style="margin-top:20px;">
+    <div class="card">
+      <h2>🔥 研究主题热度</h2>
+      <div class="desc">知识库76个研究主题中文献关联量最高的20个主题</div>
+      
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育数据新闻</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:9.4%;"></div>
+            <span class="bar-num">12</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育媒介批判研究</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:11.0%;"></div>
+            <span class="bar-num">14</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育媒介事件</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:12.6%;"></div>
+            <span class="bar-num">16</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育新媒体内容生产</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:13.4%;"></div>
+            <span class="bar-num">17</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育直播与转播实务</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:15.0%;"></div>
+            <span class="bar-num">19</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">重大体育赛事现场采访</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:15.0%;"></div>
+            <span class="bar-num">19</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">自动化体育报道</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:20.5%;"></div>
+            <span class="bar-num">26</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育媒体融合发展</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:22.0%;"></div>
+            <span class="bar-num">28</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育国际传播话语权</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:22.8%;"></div>
+            <span class="bar-num">29</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">民族主义与体育媒介</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:24.4%;"></div>
+            <span class="bar-num">31</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">AI与体育新闻</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:27.6%;"></div>
+            <span class="bar-num">35</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育跨文化传播</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:29.9%;"></div>
+            <span class="bar-num">38</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">电竞报道与媒体生态</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:33.1%;"></div>
+            <span class="bar-num">42</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">中国体育国际形象</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:38.6%;"></div>
+            <span class="bar-num">49</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育赛事报道</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:38.6%;"></div>
+            <span class="bar-num">49</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育粉丝文化</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:56.7%;"></div>
+            <span class="bar-num">72</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育受众行为研究</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:62.2%;"></div>
+            <span class="bar-num">79</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">体育媒介话语分析</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:70.1%;"></div>
+            <span class="bar-num">89</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">社交媒体与体育</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:78.0%;"></div>
+            <span class="bar-num">99</span>
+          </div>
+        </div>
+
+        <div class="bar-row">
+          <div class="bar-label topic-label">女性体育报道</div>
+          <div class="bar-wrap">
+            <div class="bar topic" style="width:100.0%;"></div>
+            <span class="bar-num">127</span>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:20px;">
+    <div class="card">
+      <h2>🔬 研究方法 × 研究主题 热力图</h2>
+      <div class="desc">颜色越深表示该主题下采用该方法的文献越多</div>
+      <table class="heat-table"><thead><tr><th class="row-label">主题\方法</th><th>理论分析</th><th>访谈研究</th><th>内容分析</th><th>调查研究</th><th>量化研究</th><th>质性研究</th><th>案例研究</th><th>实证研究</th><th>话语分析</th><th>实验研究</th><th>比较研究</th><th>历史研究</th><th>框架分析</th><th>系统文献综述</th></tr></thead><tbody><tr><td class="row-label">体育与新媒体</td><td style="background:#2563eb;color:#fff">90</td><td style="background:#eff6ff;color:#1f2937">10</td><td style="background:#eff6ff;color:#1f2937">9</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">9</td><td style="background:#eff6ff;color:#1f2937">9</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">4</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">3</td></tr>
+<tr><td class="row-label">体育新闻实务</td><td style="background:#1e3a8a;color:#fff">119</td><td style="background:#bfdbfe;color:#1f2937">28</td><td style="background:#eff6ff;color:#1f2937">12</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">6</td><td style="background:#eff6ff;color:#1f2937">7</td><td style="background:#eff6ff;color:#1f2937">6</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">2</td></tr>
+<tr><td class="row-label">体育与性别</td><td style="background:#bfdbfe;color:#1f2937">36</td><td style="background:#dbeafe;color:#1f2937">16</td><td style="background:#bfdbfe;color:#1f2937">30</td><td style="background:#eff6ff;color:#1f2937">9</td><td style="background:#eff6ff;color:#1f2937">11</td><td style="background:#dbeafe;color:#1f2937">15</td><td style="background:#eff6ff;color:#1f2937">4</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">2</td></tr>
+<tr><td class="row-label">体育国际传播</td><td style="background:#2563eb;color:#fff">82</td><td style="background:#eff6ff;color:#1f2937">7</td><td style="background:#eff6ff;color:#1f2937">9</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">4</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">0</td></tr>
+<tr><td class="row-label">体育新闻理论</td><td style="background:#60a5fa;color:#fff">64</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">4</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">6</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">0</td></tr>
+<tr><td class="row-label">体育媒体产业</td><td style="background:#bfdbfe;color:#1f2937">34</td><td style="background:#eff6ff;color:#1f2937">7</td><td style="background:#eff6ff;color:#1f2937">4</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">4</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td></tr>
+<tr><td class="row-label">体育新闻受众</td><td style="background:#dbeafe;color:#1f2937">22</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">9</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">1</td></tr>
+<tr><td class="row-label">体育新闻与技术</td><td style="background:#eff6ff;color:#1f2937">9</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">4</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">3</td></tr>
+<tr><td class="row-label">电竞新闻</td><td style="background:#eff6ff;color:#1f2937">13</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">6</td><td style="background:#eff6ff;color:#1f2937">4</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">0</td></tr>
+<tr><td class="row-label">体育与政治</td><td style="background:#dbeafe;color:#1f2937">17</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td></tr>
+<tr><td class="row-label">体育新闻教育</td><td style="background:#eff6ff;color:#1f2937">6</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td></tr>
+<tr><td class="row-label">体育新闻史</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td></tr>
+<tr><td class="row-label">体育新闻伦理</td><td style="background:#eff6ff;color:#1f2937">10</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td></tr>
+<tr><td class="row-label">AI</td><td style="background:#eff6ff;color:#1f2937">5</td><td style="background:#eff6ff;color:#1f2937">3</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">2</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">0</td><td style="background:#eff6ff;color:#1f2937">1</td><td style="background:#eff6ff;color:#1f2937">1</td></tr></tbody></table>
+    </div>
+    <div class="card">
+      <h2>🎓 理论框架 × 研究主题 热力图</h2>
+      <div class="desc">颜色越深表示该主题下依托该理论的文献越多</div>
+      <table class="heat-table theory"><thead><tr><th class="row-label">主题\理论</th><th>新闻生产社会学</th><th>性别理论</th><th>国际传播理论</th><th>新闻传播理论</th><th>新媒体传播理论</th><th>受众研究理论</th><th>框架理论</th><th>政治经济学</th><th>平台理论</th><th>叙事理论</th></tr></thead><tbody><tr><td class="row-label">体育与新媒体</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">6</td><td style="background:#fff1f2;color:#1f2937">6</td><td style="background:#fff1f2;color:#1f2937">4</td><td style="background:#f43f5e;color:#fff">79</td><td style="background:#fff1f2;color:#1f2937">4</td><td style="background:#fff1f2;color:#1f2937">11</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">5</td><td style="background:#fff1f2;color:#1f2937">9</td></tr>
+<tr><td class="row-label">体育新闻实务</td><td style="background:#881337;color:#fff">130</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">9</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">2</td><td style="background:#fff1f2;color:#1f2937">7</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">4</td><td style="background:#fff1f2;color:#1f2937">8</td></tr>
+<tr><td class="row-label">体育与性别</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#be123c;color:#fff">105</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">2</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#ffe4e6;color:#1f2937">15</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">3</td><td style="background:#fff1f2;color:#1f2937">3</td></tr>
+<tr><td class="row-label">体育国际传播</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#f43f5e;color:#fff">78</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">5</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">4</td></tr>
+<tr><td class="row-label">体育新闻理论</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fda4af;color:#1f2937">44</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">3</td><td style="background:#fff1f2;color:#1f2937">3</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">2</td><td style="background:#fff1f2;color:#1f2937">4</td></tr>
+<tr><td class="row-label">体育媒体产业</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">2</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">4</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fecdd3;color:#1f2937">43</td><td style="background:#fff1f2;color:#1f2937">9</td><td style="background:#fff1f2;color:#1f2937">0</td></tr>
+<tr><td class="row-label">体育新闻受众</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fecdd3;color:#1f2937">34</td><td style="background:#fff1f2;color:#1f2937">4</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">5</td><td style="background:#fff1f2;color:#1f2937">2</td></tr>
+<tr><td class="row-label">体育新闻与技术</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">9</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">4</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">0</td></tr>
+<tr><td class="row-label">电竞新闻</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">5</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">4</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">3</td><td style="background:#fff1f2;color:#1f2937">2</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">3</td><td style="background:#fff1f2;color:#1f2937">1</td></tr>
+<tr><td class="row-label">体育与政治</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">7</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">2</td><td style="background:#fff1f2;color:#1f2937">2</td></tr>
+<tr><td class="row-label">体育新闻教育</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">2</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">1</td></tr>
+<tr><td class="row-label">体育新闻史</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td></tr>
+<tr><td class="row-label">体育新闻伦理</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">2</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">2</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">1</td></tr>
+<tr><td class="row-label">AI</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">1</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">2</td><td style="background:#fff1f2;color:#1f2937">4</td><td style="background:#fff1f2;color:#1f2937">0</td><td style="background:#fff1f2;color:#1f2937">3</td><td style="background:#fff1f2;color:#1f2937">1</td></tr></tbody></table>
+    </div>
+  </div>
+
+  <div class="footer">
+    体育新闻研究知识库 · 智能大脑可视化 · 研究地图 v1.0
+  </div>
+</div>
+</body>
+</html>
