@@ -28,8 +28,11 @@
 
 | 优先级 | 凭证来源 | 格式 | 认证方式 |
 |--------|---------|------|---------|
-| 1️⃣ | `~/.git-credentials` | `https://用户名:token@github.com` | `curl -u "用户名:token"` |
-| 2️⃣ | `GITHUB_TOKEN` 环境变量（github-connector 获取） | `ghu_` 开头的 OAuth token | 需拼成 `用户名:token` 后 `-u` |
+| 1️⃣ | `~/.git-credentials`（git store） | `https://用户名:token@github.com` | `curl -u "用户名:token"`（✅ 已实测最有效） |
+| 2️⃣ | `GITHUB_TOKEN` 环境变量（github-connector 获取） | `ghu_` 开头的 OAuth token | 需拼成 `用户名:token` 后 `-u`（fallback） |
+
+> ⚠️ **重要**：`update_github_pages.py` 的 `get_credential()` 现在**优先读取 `~/.git-credentials` store 凭证**，
+> 因为该凭证已实测有效；`GITHUB_TOKEN` 环境变量仅作 fallback（ghu_ token 直接认证会 401）。
 
 ### ⚠️ 认证方式关键结论
 - ✅ **有效方式**：`curl -u "justadreamer2024:TOKEN"`（用户名+token 组合）
