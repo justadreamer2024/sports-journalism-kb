@@ -277,6 +277,18 @@ def deploy_git():
     log(f"🚀 部署完成 rc={pr.returncode} :: {pr.stdout[-160:]}{pr.stderr[-160:]}")
 
 
+def run_whitelist():
+    """月度维护国内体育新闻期刊白名单: 校验配置/数据库一致性/URL, 生成维护报告到 docs/。"""
+    log("[whitelist] 运行白名单期刊维护...")
+    script = os.path.join(ROOT, 'scripts', 'maintain_whitelist.py')
+    r = _run([sys.executable, script, '--sync'], timeout=300)
+    out = (r.stdout or '') + (r.stderr or '')
+    for line in out.strip().splitlines()[-15:]:
+        log(f"[whitelist] {line}")
+    # 报告提交入库（持久化到 git 供本地/部署参考）
+    log("[whitelist] 白名单维护完成")
+
+
 def run_dispatch_test():
     """验证管线：拉取 DB 并打印统计（无副作用）。"""
     import sqlite3
@@ -298,7 +310,7 @@ def main():
     inject_secrets()
 
     # 需要 DB 的作业先拉取
-    if job in ('daily', 'weekly', 'track', 'monthly', 'backup', 'dispatch-test'):
+    if job in ('daily', 'weekly', 'track', 'monthly', 'backup', 'dispatch-test', 'whitelist'):
         if not pull_db():
             log("❌ DB 拉取失败，终止")
             sys.exit(1)
@@ -312,6 +324,8 @@ def main():
             run_track()
         elif job == 'monthly':
             run_monthly()
+        elif job == 'whitelist':
+            run_whitelist()
         elif job == 'backup':
             run_backup()
         elif job == 'dispatch-test':
