@@ -13,6 +13,15 @@
 入库：literature 表，collected_by='official_website'，is_core=1，region='domestic'
       正文取自摘要（官网详情页含完整中英摘要，正文在 PDF 中，full_text_available=1）
 
+目录页结构（两种兼容，统一用 h5 a[href] 宽松选择 + URL 格式甄别）：
+  2025+   : <h5 class="card-title"><a href=详情页>
+  2023-2024: <h5><a href=详情页>（无 card-title class）
+
+已知数据源限制：
+  - 2019-2023（及部分2024）老结构详情页只含单位行、中英摘要/关键词，不含作者姓名行，
+    作者信息仅存在于 PDF 全文。故这部分文章 author 留空（客观缺失，非解析缺陷）。
+  - 新结构（2025+）详情页含完整作者行（可带数字脚注），作者解析完整。
+
 用法：
   python3 fetch_tykx_scnu.py                 # 默认采集 2019-2026 全期
   python3 fetch_tykx_scnu.py --start 2023 --end 2026
