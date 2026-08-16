@@ -184,6 +184,24 @@ def job_monthly_gate():
         job_monthly_translate()
 
 
+def job_whitelist_maintain():
+    """每月维护国内体育新闻期刊白名单: 核验配置/数据库一致性/URL连通性, 生成维护报告。
+    仅每月 1 号执行(与月度翻译共用 09:15 检查点)。"""
+    try:
+        import subprocess
+        log.info("[whitelist] 开始月度白名单期刊维护...")
+        r = subprocess.run(
+            [sys.executable, os.path.join(PROJECT_ROOT, 'scripts', 'maintain_whitelist.py'), '--sync'],
+            capture_output=True, text=True, timeout=300)
+        out = (r.stdout or '') + (r.stderr or '')
+        for line in out.strip().splitlines()[-15:]:
+            log.info(f"[whitelist] {line}")
+        log.info("✅ [whitelist] 白名单期刊维护完成, 报告见 docs/journal_whitelist_report_*.md")
+    except Exception as e:
+        log.error(f"[whitelist] 白名单维护失败: {e}")
+        send_alert("⚠️ 白名单维护异常", f"job_whitelist_maintain 异常:\n{e}")
+
+
 def job_track():
     """持续跟踪最新研究成果：增量抓取 -> 自动翻译队列 -> 重建站点 -> 同步线上"""
     try:
@@ -252,12 +270,15 @@ def main():
     schedule.every(6).hours.do(job_backup)
     # 月度翻译闸门: 每日 09:10 检查, 仅每月 1 号执行(优先翻急需 + 剩余上报 + 资源建议)
     schedule.every().day.at("09:10").do(job_monthly_gate)
+    # 白名单期刊月度维护: 每日 09:15 检查, 仅每月 1 号执行
+    schedule.every().day.at("09:15").do(job_whitelist_maintain)
 
     log.info("已注册定时任务:")
     log.info("  - 每日 08:00 / 20:00 推送动态")
     log.info("  - 每周一 09:00 推送周报")
     log.info("  - 每日 03:00 持续跟踪最新研究成果(增量抓取)")
     log.info("  - 每月 1 日 09:10 月度翻译(优先急需 + 剩余上报 + 资源建议)")
+    log.info("  - 每月 1 日 09:15 白名单期刊维护(渠道核验 + 报告)")
     log.info("  - 每6小时 本地备份")
     log.info("调度器进入循环运行...")
 
