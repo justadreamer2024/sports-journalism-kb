@@ -133,7 +133,7 @@ bash scripts/sync_github_pages.sh
 - ⚠️ **存量待办（治理后遗留）**：① 部分脚本仍硬编码 `/workspace` 绝对路径（`extract_keywords*.py`/`fill_missing_fields.py` 等），云端 Actions 可能失败，待迁移到 `env_config`/`kb_params`。
   - ✅ **② 已解决（2026-08-17）**：`docs/DEPLOY_PARAMS_FROZEN.md` 已修正为现行 `cloud_scheduler.yml`。
   - ✅ **③ 已解决（2026-08-17）**：`github_actions/` 旧目录已整体归档到 `scripts/archive/github_actions_legacy/`。
-- ✅ **三级自检机制（2026-08-17 建立）**：`scripts/health_check.py` 实现每日(轻量)/每周(完整)/每月(深度)三级自检，**并入** `cloud_runner.py` 的 daily/weekly/monthly（不新增 job），异常自动告警+安全项自动修复。详见 `docs/HEALTH_CHECK.md`。当前系统实测全部通过（DB完整性ok、FTS同步12106/12106、无参数漂移、文档一致）。
+- ✅ **三级自检机制（2026-08-17 建立）**：`scripts/health_check.py` 实现每日(轻量)/每周(完整)/每月(深度)三级自检，**并入** `cloud_runner.py` 的 daily/weekly/monthly（不新增 job），异常自动告警+安全项自动修复。详见 `docs/HEALTH_CHECK.md`。当前系统实测全部通过（DB完整性ok、FTS同步12249/12249、无参数漂移、文档一致）。
 
 ---
 
