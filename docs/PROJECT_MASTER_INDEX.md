@@ -10,7 +10,7 @@
 
 | 事项 | 唯一权威位置 | 说明 |
 |------|-------------|------|
-| **数据唯一事实源** | `database/knowledge_base.db` | SQLite，当前 **12106 篇**（国内10254/国际1852，含 NCPSSD 采集国内文献） |
+| **数据唯一事实源** | `database/knowledge_base.db` | SQLite，当前 **12249 篇**（国内10397/国际1852，含 NCPSSD 采集国内文献 + 官网直采） |
 | **权威静态站产物** | `web/static_site/` | `build_static_site.py` 生成，含 research_map.html |
 | **本地→线上部署** | `scripts/update_github_pages.py` | Contents API，真实推送 |
 | **一键部署入口** | `bash scripts/sync_github_pages.sh` | 凭证校验 + 调 update_github_pages.py |
@@ -121,9 +121,10 @@ bash scripts/sync_github_pages.sh
 - ✅ **NCPSSD 摘要补抓（2026-08-17 完成）**：`networkidle`→`load` 等待策略优化提速 20 倍（每篇 3.6s），自动流水线补完，论文摘要覆盖率 **99.5%**（剩余为编委会/总目次等非论文栏目）。权威库 39M 已同步部署包 + 云端 GitHub（`scripts/push_db_to_github.py`）
 - ✅ **官方期刊官网免费渠道验证（2026-08-16）**：《体育科学》官网 `tykx.xml-journal.net` 免登录可采全文+摘要（服务端渲染，含 HTML 全文）；《体育学刊》官网仅目次无全文。详见 `docs/journal_official_websites_free_access_20260816.md`
 - ✅ **体育科学官网采集（2026-08-17，任务1 完成）**：`scripts/fetch_tykx_official.py` 打通 NCPSSD 未收录的最核心期刊官网，采集 **1081 篇**（2015-2026 全量），含中英文摘要/作者/关键词/DOI。`collected_by='official_website'`
+- ✅ **体育学刊官网采集（2026-08-17，任务2 完成）**：`scripts/fetch_tykx_scnu.py` 打通 `tyxk.scnu.edu.cn/book/` 免费全文渠道，2019-2026 扫描全量，体育新闻/传播相关入库 **143 篇**（中英标题/作者/中英摘要/关键词/PDF全文）。`data_source='tykx_scnu_official'`
 - ✅ **主题弱项定向采集（2026-08-17，任务2 完成）**：`scripts/fetch_theme_weakspots.py` 补齐 5 大弱项主题国际文献 **550 篇**（性别144/电竞137/国际传播107/技术89/伦理73），较采集前提升 20-50 倍；`scripts/clean_theme_weakspots.py` 质量清理。详见 `docs/theme_weakspots_progress_20260817.md`
-- ✅ **权威库同步（2026-08-17）**：总文献 **12106 篇**（国内10254/国际1852），43M 权威库已同步部署包 + 云端 GitHub（git 推送，commit fdba647），FTS 索引与主表完全同步
-- ⚠️ **国内文献已补齐（NCPSSD + 官网）**：原短板（国内 435 篇）已大幅充实，国内文献达 10254 篇；仍有少量核心期刊（现代传播、新闻记者等）待走官网渠道
+- ✅ **权威库同步（2026-08-17）**：总文献 **12249 篇**（国内10397/国际1852），43M 权威库已同步部署包 + 云端 GitHub，FTS 索引与主表完全同步
+- ⚠️ **国内文献已补齐（NCPSSD + 官网直采）**：原短板（国内 435 篇）已大幅充实，国内文献达 10397 篇；仍有部分新闻传播类期刊（现代传播、新闻记者等）免费官网渠道有限，待走微信公众号/知网题录补充
 - ✅ **系统性治理（2026-08-17）**：全面梳理代码/功能/参数，达成"数据统一、信息一致、功能不冲突"：
   - **归档去重**：6 个过时/一次性脚本归档、1 个重复脚本删除（见上文"四、已归档"），顶层 .py 36→29。
   - **参数固化**：新建 `config/parameters.json`（机器）+ `docs/PARAMS_FROZEN.md`（人类）+ `scripts/kb_params.py`（加载），全部词表/检索参数/主题/期刊映射**单一事实源**，已逐项校验与现有脚本完全一致。
