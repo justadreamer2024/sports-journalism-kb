@@ -100,7 +100,27 @@ python3 fetch_tykx_official.py --abstract-only
 
 ### 3.4 借鉴到其他期刊官网
 - **方法论可复用**：凡"NCPSSD 未收录但有官网免费渠道"的期刊，均可用 L2 模式（目录页 Playwright + 详情页 requests + meta/容器解析）。
-- 已验证：**《体育学刊》官网仅目次无全文**（可采目次题录，正文需其他渠道）。
+- **《体育学刊》已打通**（见 3.5）：`tyxk.scnu.edu.cn/book/` 提供 2007 至今过刊 + 完整摘要 + PDF 全文。
+
+### 3.5 L2b · 体育学刊官网采集（`scripts/fetch_tykx_scnu.py`，2026-08-17 新增）
+- **渠道**：`https://tyxk.scnu.edu.cn/book/`（scnu 高校学报平台，**服务端渲染、免登录、无验证码**）。
+- **能力**：过刊目录（2007-2026）+ 文章详情（**中英文标题/作者/单位/中英摘要/关键词/分类号/文章编号/PDF全文**）。
+- **运行**：
+  ```bash
+  # 采集 2019-2026，只入库体育新闻/传播相关文章（推荐）
+  python3 fetch_tykx_scnu.py --start 2019 --end 2026 --sport-only
+  # 试运行不写库
+  python3 fetch_tykx_scnu.py --start 2019 --end 2026 --sport-only --dry-run
+  ```
+- **关键技术点**：
+  - **期次 URL 动态发现**：`discover_issues()` 从 `/book/` 总目录读取各期真实 URL（部分期带下划线如 `di3qi_`，不可硬编码 `diNqi`）。
+  - **文章卡片选择器**：`h5 a[href]`（早期年份 h5 无 `card-title` class，需通用选择）。
+  - **编码修复**：响应头无 charset，requests 误判 ISO-8859-1 → 用 `r.content.decode('utf-8')`。
+  - **PDF 协议相对 URL**：`//statics.scnu.edu.cn/...` → 拼 `https:` 前缀。
+  - **详情页无独立 DOI**，但有"文章编号"（含 ISSN+年卷期页码）。
+- **入库**：`collected_by='official_website'`、`data_source='tykx_scnu_official'`、`is_core=1`、`full_text_available=1`。
+- **成果**：2019-2026 扫描全量，体育新闻/传播相关文献约 **51+ 篇**（标题+摘要关键词筛选）。
+- **筛选词表**：内置 `SPORT_MEDIA_WORDS`（新闻/媒体/传播/报道/直播/转播/微信/微博/短视频/媒介/舆情/叙事/受众/粉丝/赛事传播等）。
 - 待拓展：体育教育学刊、现代传播、新闻记者等官网渠道（见 `docs/journal_official_websites_free_access_20260816.md`）。
 
 ---
@@ -170,7 +190,9 @@ python3 scripts/clean_theme_weakspots.py --report
 
 ## 七、待拓展方向（基于本手册方法论）
 
-- 其余核心期刊官网渠道：体育教育学刊、现代传播、新闻记者、新闻与写作（官网免费渠道调研见 `docs/journal_official_websites_free_access_20260816.md`）。
+- **✅ 体育学刊（已完成，2026-08-17）**：`fetch_tykx_scnu.py` 打通 scnu 学报平台免费全文渠道。
+- 四川体育科学（`sctk.cbpt.cnki.net`）：首页当期标题可采（免验证码），详情页需验证码 → 可做 CbptAdapter 采题录。
+- 体育教育学刊、现代传播、新闻记者、新闻与写作：官网免费渠道有限（投稿系统/期刊介绍/官网失效），文章主要在知网与微信公众号 → 转微信公众号或知网题录补充（渠道调研见 `docs/journal_official_websites_free_access_20260816.md`）。
 - 体育文化导刊 2018-2024、武汉体院 2020-2025、体育与科学 2019-2025 题录补全（可复用 L2 官网模式）。
 - 新增弱项主题（如"体育新闻史""体育新闻教育"）→ 在 `config/parameters.json` 的 `THEME_QUERIES` 增加主题词后跑 L3。
 
