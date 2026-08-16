@@ -52,72 +52,64 @@ def log(msg):
 
 
 # ============================================================
-# 1) DB 持久化（GitHub Release 资产）
+# 1) DB 持久化（仓库文件：checkout 读取，git commit 回写）
 # ============================================================
 def _run(cmd, **kw):
     return subprocess.run(cmd, capture_output=True, text=True, **kw)
 
 
+def _git_auth():
+    """配置 git 身份与远端鉴权（使用 GITHUB_TOKEN）。"""
+    token = os.environ.get('GITHUB_TOKEN')
+    if token and GH_REPO:
+        _run(['git', 'remote', 'set-url', 'origin',
+              f'https://x-access-token:{token}@github.com/{GH_REPO}.git'])
+    _run(['git', 'config', 'user.email', 'bot@sports-kb.local'])
+    _run(['git', 'config', 'user.name', 'Cloud Scheduler'])
+
+
 def pull_db():
-    """从 Release 资产拉取权威 DB 到 database/。优先 gh，回退 REST API。"""
+    """DB 已由 actions/checkout 从仓库检出（database/knowledge_base.db）。
+    仅当文件缺失时做兜底（Release 资产或 schema 初始化）。"""
+    if os.path.exists(DB_PATH):
+        log("✅ DB 已由 checkout 提供")
+        return True
     os.makedirs(DB_DIR, exist_ok=True)
-    # 优先 gh（GitHub Actions 中已用 GITHUB_TOKEN 预认证）
+    # 兜底：尝试从 Release 资产拉取
     try:
         r = _run(['gh', 'release', 'download', RELEASE_TAG, '-p', ASSET_NAME,
                   '-D', DB_DIR], timeout=180)
         if r.returncode == 0 and os.path.exists(DB_PATH):
             log("✅ 已从 Release 资产拉取 DB (gh)")
             return True
-        else:
-            log(f"⚠️ gh 拉取 DB 未成功(rc={r.returncode}): {r.stderr[-200:]}")
+    except Exception:
+        pass
+    # 最后兜底：用 schema 初始化空库（仅极端情况）
+    log("⚠️ 未找到 DB，尝试用 schema 初始化空库")
+    try:
+        from db_manager import init_database
+        init_database()
+        return True
     except Exception as e:
-        log(f"⚠️ gh 拉取异常: {e}")
-    # 回退：REST API（需要 GITHUB_TOKEN）
-    token = os.environ.get('GITHUB_TOKEN')
-    if token:
-        try:
-            # 取资产下载地址
-            api = (f"https://api.github.com/repos/{GH_REPO}/releases/tags/{RELEASE_TAG}")
-            out = _run(['curl', '-s', '--resolve', 'api.github.com:443:140.82.112.6',
-                        '-H', f'Authorization: Bearer {token}', api], timeout=30)
-            rel = json.loads(out.stdout)
-            asset = next((a for a in rel.get('assets', []) if a['name'] == ASSET_NAME), None)
-            if asset:
-                dl = _run(['curl', '-sL', '--resolve', 'api.github.com:443:140.82.112.6',
-                           '-H', f'Authorization: Bearer {token}',
-                           '-o', DB_PATH, asset['url']], timeout=180)
-                if dl.returncode == 0 and os.path.exists(DB_PATH):
-                    log("✅ 已从 Release 资产拉取 DB (REST)")
-                    return True
-        except Exception as e:
-            log(f"⚠️ REST 拉取异常: {e}")
-    if not os.path.exists(DB_PATH):
-        # 最后兜底：用 schema 初始化空库（仅首次极端情况）
-        log("⚠️ 未找到 Release 资产 DB，尝试用 schema 初始化空库")
-        try:
-            from db_manager import init_database
-            init_database()
-            return True
-        except Exception as e:
-            log(f"❌ DB 初始化失败: {e}")
-            return False
-    return os.path.exists(DB_PATH)
+        log(f"❌ DB 初始化失败: {e}")
+        return False
 
 
 def push_db():
-    """把当前 DB 回写 Release 资产（覆盖）。"""
+    """把当前 DB 作为仓库文件强制提交并推送（跨运行持久化）。"""
     if not os.path.exists(DB_PATH):
         log("⚠️ 无 DB 可回写，跳过")
         return False
-    try:
-        r = _run(['gh', 'release', 'upload', RELEASE_TAG, DB_PATH, '--clobber'], timeout=240)
-        if r.returncode == 0:
-            log("✅ DB 已回写 Release 资产 (gh)")
-            return True
-        log(f"⚠️ gh 回写失败(rc={r.returncode}): {r.stderr[-200:]}")
-    except Exception as e:
-        log(f"⚠️ gh 回写异常: {e}")
-    return False
+    _git_auth()
+    _run(['git', 'add', '-f', 'database/knowledge_base.db'])
+    d = _run(['git', 'diff', '--cached', '--quiet'])
+    if d.returncode == 0:
+        log("📭 DB 无变更，跳过持久化")
+        return False
+    _run(['git', 'commit', '-m', f"🤖 持久化知识库 DB {datetime.now():%Y-%m-%d %H:%M}"])
+    p = _run(['git', 'push', 'origin', 'HEAD'], timeout=120)
+    log(f"💾 DB 已持久化 rc={p.returncode} :: {p.stdout[-120:]}{p.stderr[-120:]}")
+    return p.returncode == 0
 
 
 # ============================================================
