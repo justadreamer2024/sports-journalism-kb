@@ -110,7 +110,7 @@ python3 scripts/health_check.py daily --notify-only  # 只打印不发送（调�
 - ✅ `scripts/health_check.py` 三级自检实现，daily/weekly/monthly 均实测通过（退出码 0）
 - ✅ 已接入 `cloud_runner.py` 的 run_daily/run_weekly/run_monthly（并入式，不新增 job）
 - ✅ 自动修复能力（FTS 重建）与通知通道（邮件+微信）已验证可调用
-- ✅ 全部检查项在当前系统上通过：DB 完整性 ok、FTS 同步 12106/12106、无参数漂移、文档一致
+- ✅ 全部检查项在当前系统上通过：DB 完整性 ok、FTS 同步 12249/12249、无参数漂移、文档一致
 - ✅ 已同步到本地部署包
 
 ---
