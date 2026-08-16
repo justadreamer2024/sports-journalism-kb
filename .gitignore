@@ -1,0 +1,15 @@
+# 运行期生成/敏感数据（不进仓库，DB 改用 Release 资产持久化）
+database/
+*.db
+*.db-wal
+*.db-shm
+data/
+web/static_site/
+output/
+*.bak
+*.bak_*
+__pycache__/
+*.pyc
+.codebuddy/
+node_modules/
+.DS_Store
