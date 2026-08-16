@@ -1,0 +1,10 @@
+{
+  "_说明": "翻译后端配置。当前使用百度翻译开放平台【免费额度】。实测2026-08免费额度约81595字符即用尽(剩余0), 故 free_quota_chars 保守设为 81595 作为月度监控基准(95%阈值=77515即停); 9月额度重置后如确认更大可上调。用量达免费额度95%即暂停并请示用户, 绝不擅自触发付费或充值。",
+  "backend": "baidu",
+  "baidu_app_id": "20260816002666871",
+  "baidu_secret": "",
+  "free_quota_chars": 81595,
+  "api_key": "",
+  "base_url": "https://api.deepseek.com/v1",
+  "model": "deepseek-chat"
+}
