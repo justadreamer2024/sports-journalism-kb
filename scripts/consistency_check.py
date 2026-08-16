@@ -36,6 +36,8 @@ CORE_PATHS = [
     os.path.join(PROJECT_ROOT, 'scripts', 'update_github_pages.py'),
     os.path.join(PROJECT_ROOT, 'scripts', 'sync_github_pages.sh'),
     os.path.join(PROJECT_ROOT, 'scripts', 'build_static_site.py'),
+    os.path.join(PROJECT_ROOT, 'scripts', 'fetch_tykx_official.py'),
+    os.path.join(PROJECT_ROOT, 'scripts', 'fetch_tykx_scnu.py'),
     os.path.join(PROJECT_ROOT, 'config', 'parameters.json'),
     os.path.join(PROJECT_ROOT, 'docs', 'DEPLOY_PARAMS_FROZEN.md'),
     os.path.join(PROJECT_ROOT, 'docs', 'PARAMS_FROZEN.md'),
