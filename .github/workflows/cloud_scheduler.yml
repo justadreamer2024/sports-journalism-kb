@@ -9,6 +9,7 @@ on:
     - cron: "0 19 * * *"     # 每日 03:00 (Beijing)  -> track (增量抓取+构建+部署)
     - cron: "0 1 * * 1"      # 每周一 09:00 (Beijing) -> weekly
     - cron: "10 1 1 * *"     # 每月1日 09:10 (Beijing) -> monthly
+    - cron: "20 1 1 * *"     # 每月1日 09:20 (Beijing) -> whitelist (白名单期刊维护)
     - cron: "0 */6 * * *"    # 每 6 小时 -> backup (持久化 DB)
   workflow_dispatch:
     inputs:
@@ -23,6 +24,7 @@ on:
           - weekly
           - track
           - monthly
+          - whitelist
           - backup
 
 # 部署步骤需要向仓库推送（git commit + push）
@@ -76,6 +78,7 @@ jobs:
               "0 19 * * *")             J=track ;;
               "0 1 * * 1")              J=weekly ;;
               "10 1 1 * *")             J=monthly ;;
+              "20 1 1 * *")             J=whitelist ;;
               "0 */6 * * *")            J=backup ;;
               *)                       J=backup ;;
             esac
