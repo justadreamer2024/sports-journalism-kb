@@ -15,6 +15,7 @@
 import os
 import sys
 import sqlite3
+import re
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB = os.path.join(PROJECT_ROOT, 'database', 'knowledge_base.db')
@@ -75,9 +76,19 @@ def check_db():
         conn.close()
         coverage = f"{abs_cn/abs_total*100:.1f}%" if abs_total else "N/A"
         print(f"✅ 数据库: 总 {total}（国内{domestic}/国际{international}）| 翻译覆盖 {coverage}（{abs_cn}/{abs_total}）")
-        if total != 1394:
-            print(f"   ⚠️ 总文献数 {total} ≠ 1394，与 README/文档声称不一致")
-        return total == 1394
+        # 动态读取主文档声称的文献数作为唯一事实源，避免写死导致下次变动又误报
+        claimed = None
+        for doc in ("README.md", "docs/PROJECT_MASTER_INDEX.md"):
+            p = os.path.join(PROJECT_ROOT, doc)
+            if os.path.exists(p):
+                m = re.search(r"总文献数\*\*\s*\|\s*(\d+)", open(p, encoding="utf-8").read())
+                if m:
+                    claimed = int(m.group(1))
+                    break
+        if claimed is not None and total != claimed:
+            print(f"   [WARN] 总文献数 {total} != 主文档声称 {claimed}，文档与数据库不一致")
+            return False
+        return True
     except Exception as e:
         print(f"❌ 数据库检查失败: {e}")
         return False
