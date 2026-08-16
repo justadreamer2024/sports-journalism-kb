@@ -1,0 +1,9 @@
+{
+  "smtp_server": "smtp.qq.com",
+  "smtp_port": 587,
+  "sender": "mengxiangjun2025@qq.com",
+  "password": "",
+  "recipient": "mengxiangjun@gmail.com",
+  "use_ssl": false,
+  "use_starttls": true
+}
