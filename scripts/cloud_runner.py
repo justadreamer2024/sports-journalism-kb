@@ -160,6 +160,15 @@ def inject_secrets():
 # ============================================================
 # 3) 各作业实现
 # ============================================================
+def _health(level):
+    """并入式自检：调用 health_check.py，异常时自动告警。不阻断主任务。"""
+    try:
+        log(f"🩺 [health:{level}] 运行自检...")
+        _run([sys.executable, os.path.join(HERE, 'health_check.py'), level], timeout=120)
+    except Exception as e:
+        log(f"⚠️ [health:{level}] 自检执行异常: {e}")
+
+
 def run_daily(tag='morning'):
     from scheduler import daily_update, send_email, _send_wechat_daily
     report = daily_update()
@@ -171,6 +180,7 @@ def run_daily(tag='morning'):
         _send_wechat_daily()
     except Exception as e:
         log(f"⚠️ 微信推送跳过: {e}")
+    _health('daily')
 
 
 def run_weekly():
@@ -197,6 +207,7 @@ def run_weekly():
         _send_wechat_daily()
     except Exception as e:
         log(f"⚠️ 微信推送跳过: {e}")
+    _health('weekly')
 
 
 def run_track():
@@ -238,6 +249,7 @@ def run_monthly():
         send_email(f"🌐 月度翻译报告 - {datetime.now():%Y-%m}", report)
     except Exception as e:
         log(f"⚠️ 月度报告邮件跳过: {e}")
+    _health('monthly')
 
 
 def run_backup():
@@ -289,6 +301,20 @@ def run_whitelist():
     log("[whitelist] 白名单维护完成")
 
 
+def run_ncpssd():
+    """NCPSSD 白名单期刊持续采集：增量抓题录 -> 数据质量清理(体育相关性过滤) -> 重建站点。"""
+    log("[ncpssd] 运行 NCPSSD 白名单期刊采集(增量)...")
+    r = _run([sys.executable, os.path.join(HERE, 'fetch_ncpssd_whitelist.py'),
+              '--years', '2020', '2026'], timeout=1500)
+    for line in (r.stdout or '').strip().splitlines()[-12:]:
+        log(f"[ncpssd] {line}")
+    log("[ncpssd] 数据质量清理(体育相关性过滤)...")
+    _run([sys.executable, os.path.join(HERE, 'clean_ncpssd_news.py')], timeout=300)
+    log("[ncpssd] 重建静态站点...")
+    _run([sys.executable, os.path.join(HERE, 'build_static_site.py')], timeout=300)
+    log("[ncpssd] NCPSSD 采集完成")
+
+
 def run_dispatch_test():
     """验证管线：拉取 DB 并打印统计（无副作用）。"""
     import sqlite3
@@ -310,7 +336,7 @@ def main():
     inject_secrets()
 
     # 需要 DB 的作业先拉取
-    if job in ('daily', 'weekly', 'track', 'monthly', 'backup', 'dispatch-test', 'whitelist'):
+    if job in ('daily', 'weekly', 'track', 'monthly', 'backup', 'dispatch-test', 'whitelist', 'ncpssd'):
         if not pull_db():
             log("❌ DB 拉取失败，终止")
             sys.exit(1)
@@ -326,6 +352,8 @@ def main():
             run_monthly()
         elif job == 'whitelist':
             run_whitelist()
+        elif job == 'ncpssd':
+            run_ncpssd()
         elif job == 'backup':
             run_backup()
         elif job == 'dispatch-test':
@@ -335,7 +363,7 @@ def main():
             sys.exit(2)
     finally:
         # DB 写入型作业结束后回写持久化
-        if job in ('track', 'backup', 'monthly'):
+        if job in ('track', 'backup', 'monthly', 'ncpssd'):
             push_db()
 
     log(f"✅ 作业 [{job}] 完成")

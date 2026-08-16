@@ -1,0 +1,222 @@
+{
+  "_meta": {
+    "用途": "体育新闻研究知识库·统一参数固化文件（单一事实源）。所有采集/过滤/分类/主题/期刊参数的权威定义集中于此。",
+    "版本": "20260817",
+    "更新日期": "2026-08-17",
+    "维护原则": "改任何词表/参数必须先改本文件，再同步到各脚本 import；禁止在脚本内另起炉灶定义重复词表。",
+    "参照固化文档": "docs/PARAMS_FROZEN.md（人类可读权威版）",
+    "加载方式": "from kb_params import SPORT_TOKENS, MEDIA_TOKENS, ..."
+  },
+
+  "路径": {
+    "PROJECT_ROOT_探测": "scripts/env_config.py::detect_root() 自动探测，环境变量 PROJECT_ROOT 可覆盖",
+    "DB_PATH": "database/knowledge_base.db",
+    "STATE_FILE_fetch": "config/fetch_state.json",
+    "STATE_FILE_ncpssd": "config/ncpssd_fetch_state.json",
+    "WHITELIST_PATH": "config/journal_whitelist.json",
+    "STATIC_SITE": "web/static_site"
+  },
+
+  "检索参数": {
+    "PER_QUERY": 25,
+    "MAILTO": "research@example.com",
+    "MIN_YEAR": 2010,
+    "THEME_START_YEAR": 2010,
+    "THEME_PER_THEME": 60
+  },
+
+  "增量检索词": {
+    "EN_QUERIES": [
+      "sports journalism", "sports media", "sport communication",
+      "sports reporting", "sports news", "sports broadcasting",
+      "sports digital media", "esports journalism"
+    ],
+    "CN_QUERIES": ["体育新闻", "体育传播", "体育媒体", "体育报道", "体育转播", "电子竞技 新闻"]
+  },
+
+  "质量过滤词表": {
+    "SPORT_TOKENS": [
+      "sport", "sports", "athlet", "esport", "e-sport", "olympic", "olymp",
+      "football", "soccer", "basketball", "baseball", "volleyball", "tennis",
+      "cricket", "rugby", "hockey", "gymnast", "ski", "swim", "cycling",
+      "marathon", "fifa", "nba", "nfl", "uefa", "world cup", "games",
+      "体育", "运动", "电竞", "电子竞技", "奥运", "足球", "篮球", "排球",
+      "网球", "滑雪", "游泳", "田径", "赛事"
+    ],
+    "MEDIA_TOKENS": [
+      "journalism", "journalistic", "journalist", "media", "news", "broadcast",
+      "communicat", "report", "reporting", "press", "coverage", "publication",
+      "publish", "editorial", "column", "narrative", "discourse", "storytell",
+      "audience", "reader", "viewer", "commentary", "newspaper", "magazine",
+      "tabloid", "podcast", "streaming", "platform", "social media",
+      "facebook", "twitter", "instagram", "tiktok", "youtube", "weibo", "wechat",
+      "digital media", "print", "headline", "opinion",
+      "新闻", "媒体", "传播", "报道", "转播", "广播", "出版", "期刊", "受众",
+      "读者", "观众", "社论", "叙事", "话语", "平台",
+      "market", "business", "econom", "industr", "sponsor", "brand",
+      "advertis", "commerce", "rights", "marketing",
+      "市场", "产业", "商业", "赞助", "品牌", "版权", "营销"
+    ],
+    "CORE_TERMS": [
+      "sports journalism", "sport journalism", "sports media", "sport media",
+      "sports communication", "sports reporting", "sports news",
+      "sports broadcasting", "esports journalism", "sports writing",
+      "体育新闻", "体育传播", "体育媒体", "体育报道", "体育转播", "体育写作"
+    ],
+    "ESPORTS_TOKENS": ["esport", "e-sport", "电竞", "电子竞技"],
+    "HARD_BLACKLIST": [
+      "hypertension", "arterial", "anemia", "iron deficien", "diabet", "obes",
+      "overweight", "acl", "cruciate", "surgery", "surgical", "rehabilit",
+      "physiolog", "conservation", "wildlife", "zoolog", "botan", "clinical",
+      "patient", "therapy", "chemotherap", "oncology", "umkm", "small and medium",
+      "tourism", "yoga", "pilates", "cardiac", "heart rate", "muscle",
+      "exercise training", "physical activity", "physical education",
+      "injury", "nutrit", "concussion", "endurance", "sport science",
+      "sports science", "sport sciences", "体育科学", "运动医学",
+      "运动生理", "高血压", "糖尿病", "肥胖", "手术", "康复", "临床", "患者",
+      "治疗", "癌症", "野生动物", "保护", "旅游", "瑜伽", "肌肉", "体能训练",
+      "体育教育"
+    ]
+  },
+
+  "分类规则": {
+    "RULES": [
+      ["电竞新闻", ["esport", "e-sport", "电竞", "电子竞技", "video game", "gaming"]],
+      ["体育与性别", ["gender", "women", "female", "masculin", "sexism", "性别", "女性"]],
+      ["体育与政治", ["politic", "nation", "government", "olympics", "olympic", "政治", "奥运"]],
+      ["体育与新媒体", ["social media", "twitter", "facebook", "instagram", "tiktok", "digital", "online", "platform", "新媒体", "社交媒体"]],
+      ["体育国际传播", ["international", "global", "cross-cultur", "diplomacy", "soft power", "国际传播", "话语"]],
+      ["体育媒体产业", ["industry", "market", "business", "commercial", "econom", "ownership", "产业", "市场"]],
+      ["体育新闻与技术", ["ai", "artificial intelligence", "algorithm", "automation", "chatbot", "llm", "chatgpt", "generative", "人工智能", "算法", "自动化"]],
+      ["体育新闻伦理", ["ethic", "journalistic", "objectivity", "bias", "framing", "伦理", "客观", "框架"]],
+      ["体育新闻受众", ["audience", "fan", "consumer", "reader", "viewer", "engag", "受众", "观众", "球迷"]],
+      ["体育新闻史", ["histor", "evolution", "origin", "history", "史", "演进"]],
+      ["体育新闻教育", ["education", "teaching", "curriculum", "student", "training", "教育", "培养", "课程"]],
+      ["体育新闻理论", ["theor", "concept", "framework", "discourse", "narrative", "理论", "框架", "叙事"]],
+      ["体育新闻实务", ["reporting", "coverage", "journalism practice", "interview", "story", "实务", "报道", "采访"]]
+    ]
+  },
+
+  "主题弱项": {
+    "THEME_QUERIES": {
+      "体育与性别": [
+        "gender in sports media", "women in sports journalism",
+        "female athletes media representation", "gender equality sports media",
+        "sportswomen coverage", "masculinity sports media",
+        "体育 性别 媒体", "体育 女性 传播", "体育新闻 性别"
+      ],
+      "电竞新闻": [
+        "esports journalism", "esports media coverage", "esports broadcasting",
+        "esports journalism ethics", "video game journalism",
+        "电竞 新闻", "电子竞技 报道", "电竞 传播"
+      ],
+      "体育新闻与技术": [
+        "AI sports journalism", "automated sports news", "algorithm sports media",
+        "artificial intelligence sports reporting", "data journalism sports",
+        "digital technology sports broadcasting",
+        "体育新闻 人工智能", "体育 算法 传播", "体育新闻 技术"
+      ],
+      "体育新闻伦理": [
+        "sports journalism ethics", "sports media ethics", "journalistic objectivity sports",
+        "sports journalism bias", "media framing athletes", "sports news misinformation",
+        "体育新闻 伦理", "体育媒体 失范", "体育报道 伦理"
+      ],
+      "体育国际传播": [
+        "sports diplomacy international", "sports soft power media",
+        "international sports communication", "global sports media",
+        "China sports international communication", "sports nation branding",
+        "体育 国际传播", "体育 对外传播", "体育 国际话语权"
+      ]
+    },
+    "THEME_CATEGORY": {
+      "体育与性别": "体育与性别",
+      "电竞新闻": "电竞新闻",
+      "体育新闻与技术": "体育新闻与技术",
+      "体育新闻伦理": "体育新闻伦理",
+      "体育国际传播": "体育国际传播"
+    }
+  },
+
+  "国内期刊过滤词": {
+    "SPORT_WORDS": [
+      "体育", "运动", "奥运", "冬奥", "残奥", "冬残奥", "亚运", "亚残运", "全运", "大运", "青运", "世界杯",
+      "世锦赛", "亚洲杯", "欧洲杯", "联赛", "锦标赛", "邀请赛", "对抗赛", "总决赛", "预选赛",
+      "赛事", "比赛", "赛会", "竞技", "运动员", "教练", "裁判", "奖牌", "冠军", "夺金", "夺银", "夺铜",
+      "金牌", "银牌", "铜牌", "领奖台", "选手", "代表队", "国家队", "俱乐部", "积分", "排名",
+      "决赛", "半决赛", "资格赛",
+      "足球", "篮球", "排球", "网球", "乒乓球", "羽毛球", "棒球", "垒球", "橄榄球", "高尔夫", "曲棍球",
+      "田径", "短跑", "长跑", "跨栏", "跳高", "跳远", "铅球", "铁饼", "标枪", "马拉松", "竞走",
+      "游泳", "跳水", "水球", "赛艇", "皮划艇", "帆船", "冲浪", "铁人三项",
+      "体操", "蹦床", "举重", "拳击", "柔道", "摔跤", "跆拳道", "击剑", "射箭", "射击",
+      "滑冰", "滑雪", "冰球", "冰壶", "雪车", "雪橇", "单板", "滑板", "攀岩", "轮滑",
+      "武术", "散打", "太极拳", "龙舟", "舞龙", "舞狮", "健身操", "广场舞", "健美操", "健美", "瑜伽", "普拉提",
+      "电竞", "电子竞技", "象棋", "围棋", "桥牌",
+      "体育产业", "体育文化", "体育强国", "全民健身", "竞技体育", "群众体育", "学校体育", "体教融合",
+      "体育场馆", "体育设施", "体育消费", "体育旅游", "体育经济", "体育营销", "体育赞助", "体育版权",
+      "体育新闻", "体育传播", "体育媒体", "体育报道", "体育转播", "体育直播", "体育评论", "体育记者",
+      "体育节目", "体育频道", "赛事直播", "比赛转播",
+      "国足", "中超", "CBA", "NBA", "英超", "西甲", "意甲", "德甲", "法甲", "中甲", "排超"
+    ],
+    "PURE_SPORT_KEYWORDS": ["体育", "运动", "竞技", "青少年体育", "运动精品"],
+    "NEWS_SOURCES": ["中国记者", "新闻界", "国际新闻界", "新闻与传播研究", "青年记者", "未来传播", "科技传播", "艺术传播研究", "记者摇篮", "新闻战线"]
+  },
+
+  "主题清理噪声": {
+    "HARD_NOISE": [
+      "alloy", "material science", "chemical", "battery", "corrosion",
+      "polymer", "nanoparticle", "machine learning algorithm", "neural network training",
+      "computer vision classification", "cardio", "biomechanic injury",
+      "agricultur", "rural household", "financial market", "stock market",
+      "corporate governance", "supply chain", "税收", "财政政策"
+    ],
+    "清理原则": "只剔强噪声，不做主题词强约束（避免误删实际相关的体育媒体/传播研究，如 Sports and Media Culture）。避免收录 education/教学/新媒体 等常与体育教育/传播相关易误删的词。"
+  },
+
+  "期刊映射": {
+    "JOURNAL_GCH": {
+      "中国体育科技": ["83653X", "1002-9826", "11-2284/G8", "体育学来源刊"],
+      "北京体育大学学报": ["96907A", "1007-3612", "11-3785/G8", "体育学来源刊"],
+      "武汉体育学院学报": ["83061X", "1000-520X", "42-1105/G8", "体育学来源刊"],
+      "天津体育学院学报": ["83222X", "1005-0000", "12-1140/G8", "体育学来源刊"],
+      "西安体育学院学报": ["82769X", "1001-747X", "61-1198/G8", "体育学来源刊"],
+      "首都体育学院学报": ["97316A", "1009-783X", "11-4513/G", "体育学来源刊"],
+      "体育文化导刊": ["82010A", "1671-1572", "11-4612/G8", "体育文化专门"],
+      "体育与科学": ["96602X", "1004-4590", "32-1208/G8", "体育学来源刊"],
+      "体育科学研究": ["90524X", "1007-7413", "35-1189/G8", "体育学相关"],
+      "四川体育科学": ["98581X", "1007-6891", "51-1136/G8", "体育学相关"],
+      "浙江体育科学": ["80645X", "1004-3624", "33-1128/G8", "体育学相关"],
+      "山东体育学院学报": ["82572X", "1006-2076", "37-1013/G8", "体育学来源刊"],
+      "哈尔滨体育学院学报": ["85197X", "1008-2808", "23-1243/G8", "体育学相关"],
+      "当代体育科技": ["86064A", "2095-2813", "23-1579/G8", "体育学相关"],
+      "体育科研": ["82694X", "1006-1207", "31-1194/G8", "体育学相关"],
+      "体育科技文献通报": ["84194X", "1005-0256", "11-3262/G8", "体育学相关"],
+      "体育教育学刊": ["83489B", "2097-1028", "42-1922/G8", "体育学相关"],
+      "体育函授通讯": ["83489X", "2097-1028", "42-1922/G8", "体育学相关"],
+      "体育师友": ["82001X", "1006-1487", "44-1384/G8", "体育学相关"],
+      "体育研究与教育": ["82702A", "2095-235X", "14-1366/G8", "体育学相关"],
+      "运动与健康科学（英文）": ["71603X", "2095-2546", "31-2066/G8", "国际体育期刊"],
+      "青少年体育": ["82541A", "2095-4581", "10-1081/G8", "体育学相关"],
+      "运动精品": ["81184X", "1004-2644", "45-1296/G8", "体育学相关"],
+      "新闻与传播研究": ["83042X", "1005-2577", "11-3320/G2", "新闻传播"],
+      "国际新闻界": ["81752X", "1002-5685", "11-1523/G2", "新闻传播"],
+      "新闻界": ["81149X", "1007-2438", "51-1046/G2", "新闻传播"],
+      "青年记者": ["82782X", "1002-2759", "37-1003/G2", "新闻传播"],
+      "未来传播": ["70414A", "2096-8418", "33-1412/G2", "新闻传播"],
+      "科技传播": ["89846X", "1674-6708", "11-5820/N", "新闻传播"],
+      "艺术传播研究": ["71766A", "2096-8183", "10-1651/J", "新闻传播"],
+      "记者摇篮": ["81095X", "2096-3858", "21-1032/G2", "新闻传播"],
+      "中国记者": ["96960X", "1003-1146", "11-1275/G2", "新闻传播"]
+    }
+  },
+
+  "调度cron": {
+    "权威来源": ".github/workflows/cloud_scheduler.yml",
+    "每日动态推送": "0 0 * * * / 0 12 * * * (北京08:00/20:00)",
+    "持续跟踪": "0 19 * * * (北京03:00)",
+    "每周周报": "0 1 * * 1 (周一北京09:00)",
+    "月度翻译": "10 1 1 * * (每月1日北京09:10)",
+    "白名单维护": "20 1 1 * * (每月1日北京09:20)",
+    "NCPSSD采集": "30 1 * * 3 (每周三北京09:30)",
+    "DB备份": "0 */6 * * * (每6小时)"
+  }
+}
