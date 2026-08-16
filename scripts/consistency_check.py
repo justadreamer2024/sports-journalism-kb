@@ -29,11 +29,17 @@ CORE_PATHS = [
     os.path.join(STATIC, 'index.html'),
     os.path.join(PROJECT_ROOT, 'scripts', 'db_manager.py'),
     os.path.join(PROJECT_ROOT, 'scripts', 'scheduler.py'),
-    os.path.join(PROJECT_ROOT, 'scripts', 'daemon_scheduler.py'),
+    os.path.join(PROJECT_ROOT, 'scripts', 'cloud_runner.py'),
+    os.path.join(PROJECT_ROOT, 'scripts', 'local_scheduler.py'),
+    os.path.join(PROJECT_ROOT, 'scripts', 'health_check.py'),
+    os.path.join(PROJECT_ROOT, 'scripts', 'kb_params.py'),
     os.path.join(PROJECT_ROOT, 'scripts', 'update_github_pages.py'),
     os.path.join(PROJECT_ROOT, 'scripts', 'sync_github_pages.sh'),
     os.path.join(PROJECT_ROOT, 'scripts', 'build_static_site.py'),
+    os.path.join(PROJECT_ROOT, 'config', 'parameters.json'),
     os.path.join(PROJECT_ROOT, 'docs', 'DEPLOY_PARAMS_FROZEN.md'),
+    os.path.join(PROJECT_ROOT, 'docs', 'PARAMS_FROZEN.md'),
+    os.path.join(PROJECT_ROOT, 'docs', 'COLLECTION_SKILLS_FROZEN.md'),
     os.path.join(PROJECT_ROOT, 'docs', 'PROJECT_MASTER_INDEX.md'),
     os.path.join(PROJECT_ROOT, 'config', 'email_config.json'),
     os.path.join(PROJECT_ROOT, 'config', 'wechat_config.json'),
@@ -45,23 +51,34 @@ ARCHIVED_SCRIPTS = [
     'apply_abstract_cn.py',
     'import_literature.py',
     'setup_cron.sh',
+    'daemon_scheduler.py',       # 2026-08-17 归档：被 cloud_runner.py 取代
+    'push_repo.py',              # 2026-08-17 归档：一次性部署
+    'setup_cloud.py',            # 2026-08-17 归档：一次性初始化
+    'run_abstract_backfill_loop.py',   # 2026-08-17 归档：历史补摘要
+    'run_backfill_after_batchA.py',    # 2026-08-17 归档：历史接力
+    'cleanup_shell_noise.py',    # 2026-08-17 归档：一次性清理
+    'apply_abstract_cn_batch56.py',    # 2026-08-17 删除：与 archive 重复
 ]
 
-# GHA 脚本关键配置（应指向根目录）
-GHA_SCRIPTS = {
-    'auto_fetch.py': 'SITE_DIR = REPO_ROOT',
-    'rebuild_site.py': 'SITE_DIR = REPO_ROOT',
-}
 
 
 def check_paths():
-    missing = [p for p in CORE_PATHS if not os.path.exists(p)]
+    # 脱敏部署包识别：无真实 email/wechat 配置但有 .template.json -> 部署包（密钥由安装时填入），
+    # 跳过对敏感配置的缺失告警（与 health_check.py 的 is_package 逻辑保持一致）。
+    sensitive = [os.path.join(PROJECT_ROOT, 'config', 'email_config.json'),
+                 os.path.join(PROJECT_ROOT, 'config', 'wechat_config.json')]
+    is_package = (not os.path.exists(sensitive[0])) and os.path.exists(
+        os.path.join(PROJECT_ROOT, 'config', 'email_config.template.json'))
+    check_paths_list = [p for p in CORE_PATHS if not (is_package and p in sensitive)]
+
+    missing = [p for p in check_paths_list if not os.path.exists(p)]
     if missing:
         print("❌ 缺失的权威路径:")
         for p in missing:
             print(f"   {p}")
         return False
-    print(f"✅ 核心权威路径全部存在（{len(CORE_PATHS)} 项）")
+    suffix = '（脱敏部署包，跳过敏感配置检查）' if is_package else ''
+    print(f"✅ 核心权威路径全部存在（{len(check_paths_list)} 项）{suffix}")
     return True
 
 
@@ -109,38 +126,34 @@ def check_archived():
 
 
 def check_gha():
-    problems = []
-    for fname, expected in GHA_SCRIPTS.items():
-        path = os.path.join(PROJECT_ROOT, 'github_actions', 'scripts', fname)
-        if not os.path.exists(path):
-            problems.append(f"缺失 github_actions/scripts/{fname}")
-            continue
-        with open(path, encoding='utf-8') as f:
-            content = f.read()
-        if expected not in content:
-            problems.append(f"{fname} 的 SITE_DIR 未指向 REPO_ROOT（可能改回 site/ 了）")
-    if problems:
-        print("❌ GHA 脚本问题:")
-        for p in problems:
-            print(f"   {p}")
+    """检查旧 github_actions/ 目录已归档（不再用 auto_fetch/rebuild_site 旧脚本，统一走 scripts/fetch_incremental.py）。"""
+    legacy = os.path.join(PROJECT_ROOT, 'github_actions')
+    if os.path.exists(legacy):
+        print("❌ 旧目录 github_actions/ 仍存在于根目录（应归档到 scripts/archive/github_actions_legacy/）")
         return False
-    print("✅ GHA 脚本 SITE_DIR 均指向根目录")
+    print("✅ 旧 github_actions/ 目录已归档（现行云端统一走 scripts/cloud_runner.py）")
     return True
 
 
 def check_workflow():
-    wf = os.path.join(PROJECT_ROOT, 'github_actions', '.github', 'workflows', 'weekly_update.yml')
+    """检查仓库根 cloud_scheduler.yml（现行唯一权威调度，2026-08-17 起替代废弃的 weekly_update.yml）。"""
+    gh_dir = os.path.join(PROJECT_ROOT, '.github')
+    # 部署包/便携运行环境不含 .github（云端专属），跳过云端工作流检查
+    if not os.path.exists(gh_dir):
+        print("ℹ️ 便携运行环境（无 .github/），跳过云端工作流检查（主库权威校验见 .github/workflows/cloud_scheduler.yml）")
+        return True
+    wf = os.path.join(gh_dir, 'workflows', 'cloud_scheduler.yml')
     if not os.path.exists(wf):
-        print("❌ 缺失 weekly_update.yml")
+        print("❌ 缺失 cloud_scheduler.yml（仓库根，权威调度）")
         return False
     with open(wf, encoding='utf-8') as f:
         content = f.read()
-    if "git add site/" in content:
-        print("❌ weekly_update.yml 仍在 git add site/（应为 data.json index.html）")
+    if 'cloud_runner.py' not in content:
+        print("❌ cloud_scheduler.yml 未调用 cloud_runner.py（应为云端调度入口）")
         return False
-    if "git add data.json index.html" not in content:
-        print("⚠️ weekly_update.yml 未显式 add data.json index.html")
-    print("✅ weekly_update.yml 路径正确")
+    if 'workflow_dispatch' not in content:
+        print("⚠️ cloud_scheduler.yml 未配置 workflow_dispatch 手动触发")
+    print("✅ cloud_scheduler.yml 正确（调用 cloud_runner.py，仓库根权威）")
     return True
 
 
