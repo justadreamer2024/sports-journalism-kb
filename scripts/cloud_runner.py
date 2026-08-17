@@ -39,6 +39,7 @@ ROOT = os.path.dirname(HERE)                       # 仓库根（PROJECT_ROOT）
 sys.path.insert(0, HERE)                           # 让 scheduler / db_manager 可导入
 DB_DIR = os.path.join(ROOT, 'database')
 DB_PATH = os.path.join(DB_DIR, 'knowledge_base.db')
+GZ_PATH = os.path.join(DB_DIR, 'knowledge_base.db.gz')
 CONFIG_DIR = os.path.join(ROOT, 'config')
 SITE_DIR = os.path.join(ROOT, 'web', 'static_site')
 RELEASE_TAG = 'db-snapshot'
@@ -69,12 +70,23 @@ def _git_auth():
 
 
 def pull_db():
-    """DB 已由 actions/checkout 从仓库检出（database/knowledge_base.db）。
-    仅当文件缺失时做兜底（Release 资产或 schema 初始化）。"""
+    """DB 由 actions/checkout 从仓库检出。优先使用 gzip 压缩版（数据库较大，
+    压缩后可通过 Contents API 跨沙箱同步），解压为 .db 后使用。
+    兜底顺序：gzip 解压 -> 原始 .db -> Release 资产 -> schema 初始化。"""
+    os.makedirs(DB_DIR, exist_ok=True)
+    # 优先：仓库里的 gzip 压缩版（最新，解压覆盖）
+    if os.path.exists(GZ_PATH) and os.path.getsize(GZ_PATH) > 0:
+        try:
+            import gzip
+            with gzip.open(GZ_PATH, 'rb') as fi, open(DB_PATH, 'wb') as fo:
+                fo.write(fi.read())
+            log(f"✅ 已从 gzip 解压 DB ({os.path.getsize(DB_PATH)/1e6:.1f}MB)")
+            return True
+        except Exception as e:
+            log(f"⚠️ gzip 解压失败: {e}，回退原始 .db")
     if os.path.exists(DB_PATH):
         log("✅ DB 已由 checkout 提供")
         return True
-    os.makedirs(DB_DIR, exist_ok=True)
     # 兜底：尝试从 Release 资产拉取
     try:
         r = _run(['gh', 'release', 'download', RELEASE_TAG, '-p', ASSET_NAME,
@@ -96,12 +108,21 @@ def pull_db():
 
 
 def push_db():
-    """把当前 DB 作为仓库文件强制提交并推送（跨运行持久化）。"""
+    """把当前 DB 作为仓库文件强制提交并推送（跨运行持久化）。
+    同时生成并提交 gzip 压缩版，便于跨沙箱用 Contents API 同步最新库。"""
     if not os.path.exists(DB_PATH):
         log("⚠️ 无 DB 可回写，跳过")
         return False
+    # 同步生成最新 gzip 版
+    try:
+        import gzip
+        with open(DB_PATH, 'rb') as fi, gzip.open(GZ_PATH, 'wb') as fo:
+            fo.write(fi.read())
+        log(f"✅ 已生成 gzip 版 DB ({os.path.getsize(GZ_PATH)/1e6:.1f}MB)")
+    except Exception as e:
+        log(f"⚠️ gzip 生成失败: {e}")
     _git_auth()
-    _run(['git', 'add', '-f', 'database/knowledge_base.db'])
+    _run(['git', 'add', '-f', 'database/knowledge_base.db', 'database/knowledge_base.db.gz'])
     d = _run(['git', 'diff', '--cached', '--quiet'])
     if d.returncode == 0:
         log("📭 DB 无变更，跳过持久化")
